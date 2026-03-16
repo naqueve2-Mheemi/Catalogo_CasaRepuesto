@@ -1,0 +1,31 @@
+{
+  "negocio": "Casa de Repuesto",
+  "actualizado": "16/03/2026 19:04",
+  "total": 3,
+  "articulos": [
+    {
+      "codigo": "IC378",
+      "rubro": "ABRAZADERA",
+      "detalle": "ABRAZADERA BARRA ESTABILIZADORA DELANTERA RENAULT TRAFIC (2 PIEZAS)",
+      "marca": "ICSA",
+      "precio": 2880.0,
+      "stock": 9
+    },
+    {
+      "codigo": "TB10087",
+      "rubro": "ACOPLE",
+      "detalle": "ACOPLE SALIDA CREMALLERA R12",
+      "marca": "TB",
+      "precio": 12080.0,
+      "stock": 3
+    },
+    {
+      "codigo": "IC425",
+      "rubro": "ARANDELA",
+      "detalle": "ARANDELA DE TEFLÓN FORD F100 - F1000",
+      "marca": "ICSA",
+      "precio": 1780.0,
+      "stock": 10
+    }
+  ]
+}
