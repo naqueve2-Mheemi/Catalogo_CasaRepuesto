@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Casa de Repuesto — Catálogo</title>
+  <style>
+    /* ── Reset y base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f2f5;
+      color: #1f2937;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      color: white;
+      padding: 20px 24px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.5px; }
+    header p  { font-size: 0.8rem; opacity: 0.85; margin-top: 2px; }
+
+    /* ── Barra de búsqueda ── */
+    .search-bar {
+      padding: 12px 16px;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      position: sticky;
+      top: 72px;
+      z-index: 99;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 10px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-bar input:focus { border-color: #3b82f6; }
+
+    /* ── Filtro por rubro ── */
+    .filters {
+      padding: 8px 16px;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 126px;
+      z-index: 98;
+    }
+    .filter-btn {
+      padding: 5px 14px;
+      border: 1px solid #e5e7eb;
+      border-radius: 20px;
+      background: #f9fafb;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .filter-btn:hover  { border-color: #3b82f6; color: #3b82f6; }
+    .filter-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+
+    /* ── Contenido principal ── */
+    main { padding: 16px; max-width: 900px; margin: 0 auto; }
+
+    /* ── Info de actualización ── */
+    .update-info {
+      font-size: 0.78rem;
+      color: #6b7280;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .badge {
+      background: #10b981;
+      color: white;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* ── Sección por rubro ── */
+    .rubro-section { margin-bottom: 20px; }
+    .rubro-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #3b82f6;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 6px 0 4px;
+      border-bottom: 2px solid #dbeafe;
+      margin-bottom: 6px;
+    }
+
+    /* ── Cards de artículo ── */
+    .articulos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 8px;
+    }
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: box-shadow 0.15s, border-color 0.15s;
+    }
+    .card:hover { box-shadow: 0 2px 8px rgba(59,130,246,0.12); border-color: #bfdbfe; }
+
+    .card-detalle {
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: #1f2937;
+      line-height: 1.3;
+    }
+    .card-marca {
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+    }
+    .card-precio {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1d4ed8;
+    }
+    .card-stock {
+      font-size: 0.75rem;
+      background: #f0fdf4;
+      color: #16a34a;
+      border: 1px solid #bbf7d0;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+    .card-codigo {
+      font-size: 0.72rem;
+      color: #9ca3af;
+      font-family: monospace;
+    }
+
+    /* ── Sin resultados ── */
+    .no-results {
+      text-align: center;
+      padding: 48px 24px;
+      color: #9ca3af;
+    }
+    .no-results span { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+
+    /* ── Loading ── */
+    .loading {
+      text-align: center;
+      padding: 64px 24px;
+      color: #6b7280;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      header h1 { font-size: 1.1rem; }
+      .articulos-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🔧 Casa de Repuesto</h1>
+  <p id="subtitulo">Cargando catálogo...</p>
+</header>
+
+<div class="search-bar">
+  <input
+    type="search"
+    id="buscador"
+    placeholder="Buscar por detalle, marca o código..."
+    autocomplete="off"
+    disabled
+  />
+</div>
+
+<div class="filters" id="filtros-rubro"></div>
+
+<main id="contenido">
+  <div class="loading">
+    <div class="spinner"></div>
+    <p>Cargando catálogo...</p>
+  </div>
+</main>
+
+<script>
+  // ── Estado global ──
+  let todosLosArticulos = [];
+  let rubroActivo       = "todos";
+  let textoBusqueda     = "";
+
+  // ── Cargar el JSON del catálogo ──
+  // El archivo catalogo.json está en la raíz del mismo repositorio.
+  // Se agrega ?t=timestamp para evitar caché del browser.
+  async function cargarCatalogo() {
+    try {
+      const url  = `catalogo.json?t=${Date.now()}`;
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+
+      todosLosArticulos = data.articulos || [];
+
+      // Actualizar subtítulo del header
+      document.getElementById("subtitulo").textContent =
+        `${data.total} repuestos disponibles · Actualizado: ${data.actualizado}`;
+
+      // Habilitar buscador
+      document.getElementById("buscador").disabled = false;
+      document.getElementById("buscador").focus();
+
+      // Construir filtros de rubro
+      construirFiltros();
+      renderizar();
+
+    } catch (err) {
+      document.getElementById("contenido").innerHTML = `
+        <div class="no-results">
+          <span>⚠️</span>
+          <p>No se pudo cargar el catálogo.<br/>
+          <small style="color:#9ca3af">${err.message}</small></p>
+        </div>`;
+      document.getElementById("subtitulo").textContent = "Error al cargar";
+    }
+  }
+
+  // ── Construir botones de filtro por rubro ──
+  function construirFiltros() {
+    const rubros = [...new Set(todosLosArticulos.map(a => a.rubro))].sort();
+    const cont   = document.getElementById("filtros-rubro");
+
+    const btnTodos = document.createElement("button");
+    btnTodos.className = "filter-btn active";
+    btnTodos.textContent = "Todos";
+    btnTodos.dataset.rubro = "todos";
+    btnTodos.onclick = () => seleccionarRubro("todos");
+    cont.appendChild(btnTodos);
+
+    rubros.forEach(r => {
+      const btn = document.createElement("button");
+      btn.className    = "filter-btn";
+      btn.textContent  = r;
+      btn.dataset.rubro = r;
+      btn.onclick = () => seleccionarRubro(r);
+      cont.appendChild(btn);
+    });
+  }
+
+  function seleccionarRubro(rubro) {
+    rubroActivo = rubro;
+    // Actualizar estado visual de los botones
+    document.querySelectorAll(".filter-btn").forEach(b => {
+      b.classList.toggle("active", b.dataset.rubro === rubro);
+    });
+    renderizar();
+  }
+
+  // ── Filtrar y renderizar ──
+  function renderizar() {
+    const texto = textoBusqueda.toLowerCase().trim();
+
+    // Filtrar por texto y rubro
+    const filtrados = todosLosArticulos.filter(a => {
+      const coincideRubro = rubroActivo === "todos" || a.rubro === rubroActivo;
+      const coincideTexto = !texto ||
+        a.detalle.toLowerCase().includes(texto) ||
+        a.marca.toLowerCase().includes(texto)   ||
+        (a.codigo && a.codigo.toLowerCase().includes(texto));
+      return coincideRubro && coincideTexto;
+    });
+
+    if (filtrados.length === 0) {
+      document.getElementById("contenido").innerHTML = `
+        <div class="no-results">
+          <span>🔍</span>
+          <p>No se encontraron repuestos para "<strong>${textoBusqueda}</strong>"</p>
+        </div>`;
+      return;
+    }
+
+    // Agrupar por rubro
+    const porRubro = {};
+    filtrados.forEach(a => {
+      (porRubro[a.rubro] = porRubro[a.rubro] || []).push(a);
+    });
+
+    // Construir HTML
+    const cont = document.getElementById("contenido");
+    cont.innerHTML = `
+      <div class="update-info">
+        <span>${filtrados.length} resultado(s)</span>
+        <span class="badge">Stock disponible</span>
+      </div>`;
+
+    Object.keys(porRubro).sort().forEach(rubro => {
+      const seccion = document.createElement("div");
+      seccion.className = "rubro-section";
+
+      const titulo = document.createElement("div");
+      titulo.className   = "rubro-title";
+      titulo.textContent = rubro;
+      seccion.appendChild(titulo);
+
+      const grid = document.createElement("div");
+      grid.className = "articulos-grid";
+
+      porRubro[rubro].forEach(art => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card-detalle">${art.detalle}</div>
+          <div class="card-marca">${art.marca || "—"}</div>
+          ${art.codigo ? `<div class="card-codigo">${art.codigo}</div>` : ""}
+          <div class="card-footer">
+            <span class="card-precio">$${Number(art.precio).toLocaleString("es-AR")}</span>
+            <span class="card-stock">Stock: ${art.stock}</span>
+          </div>`;
+        grid.appendChild(card);
+      });
+
+      seccion.appendChild(grid);
+      cont.appendChild(seccion);
+    });
+  }
+
+  // ── Eventos ──
+  document.getElementById("buscador").addEventListener("input", e => {
+    textoBusqueda = e.target.value;
+    renderizar();
+  });
+
+  // Arrancar
+  cargarCatalogo();
+</script>
+</body>
+</html>
